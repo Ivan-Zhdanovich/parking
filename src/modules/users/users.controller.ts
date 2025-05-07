@@ -1,6 +1,15 @@
-import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
+import { Users } from './entities/user.entity';
 
 @Controller('api')
 export class UsersController {
@@ -8,8 +17,17 @@ export class UsersController {
 
   @Post('/auth/register')
   @HttpCode(201)
-  register(@Body() user: UserDto): Promise<UserDto> {
-    return this.userService.register(user);
+  async register(@Body() user: UserDto): Promise<Users | void> {
+    try {
+      return await this.userService.register(user);
+    } catch (error) {
+      if (error) {
+        throw new HttpException(
+          'user with this email already exists',
+          HttpStatus.CONFLICT,
+        );
+      }
+    }
   }
 
   @Get('/auth/findAll')
